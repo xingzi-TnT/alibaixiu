@@ -9,6 +9,8 @@ $.ajax({
     }
 })
 
+
+
 $('#file').on('change', function () {
     let fd = new FormData()
     fd.append('avatar', this.files[0])

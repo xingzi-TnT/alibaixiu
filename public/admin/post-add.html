@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<script src="/login/status"></script>
+<script>
+  if (!isLogin) location.href = 'login.html'
+</script>
 <html lang="zh-CN">
 
 <head>
@@ -118,6 +122,8 @@
     <option value="{{$value._id}}"> {{$value.title}}</option>
     {{/each}}
   </script>
+  <script src="../assets/js/common.js"></script>
+
   <script src="../assets/js/post-add.js"></script>
 </body>
 
