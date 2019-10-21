@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Add new post &laquo; Admin</title>
+  <link rel="stylesheet" href="../assets/vendors/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="../assets/vendors/font-awesome/css/font-awesome.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+
+  <div class="main">
+    <nav class="navbar">
+      <button class="btn btn-default navbar-btn fa fa-bars"></button>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="password-reset.html"><i class="fa fa-user"></i>修改密码</a></li>
+        <li><a href="login.html"><i class="fa fa-sign-out"></i>退出</a></li>
+      </ul>
+    </nav>
+    <div class="container-fluid" id="editBox">
+      <div class="page-title">
+        <h1>修改文章</h1>
+      </div>
+      <!-- 有错误信息时展示 -->
+      <!-- <div class="alert alert-danger">
+        <strong>错误！</strong>发生XXX错误
+      </div> -->
+      <!-- 这个是form原来的位置 -->
+    </div>
+  </div>
+
+  <div class="aside">
+    <div class="profile">
+      <img class="avatar" src="../uploads/avatar.jpg">
+      <h3 class="name">Coder</h3>
+    </div>
+    <ul class="nav">
+      <li>
+        <a href="index.html"><i class="fa fa-dashboard"></i>仪表盘</a>
+      </li>
+      <li class="active">
+        <a href="#menu-posts" data-toggle="collapse">
+          <i class="fa fa-thumb-tack"></i>文章<i class="fa fa-angle-right"></i>
+        </a>
+        <ul id="menu-posts" class="collapse in">
+          <li><a href="posts.html">所有文章</a></li>
+          <li class="active"><a href="post-add.html">写文章</a></li>
+          <li><a href="categories.html">分类目录</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="comments.html"><i class="fa fa-comments"></i>评论</a>
+      </li>
+      <li>
+        <a href="users.html"><i class="fa fa-users"></i>用户</a>
+      </li>
+      <li>
+        <a href="#menu-settings" class="collapsed" data-toggle="collapse">
+          <i class="fa fa-cogs"></i>设置<i class="fa fa-angle-right"></i>
+        </a>
+        <ul id="menu-settings" class="collapse">
+          <li><a href="slides.html">图片轮播</a></li>
+          <li><a href="settings.html">网站设置</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <script src="../assets/vendors/jquery/jquery.js"></script>
+  <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
+  <script type="text/html" id="tpl">
+    <form class="row" id="editForm">
+        <div class="col-md-9">
+          <div class="form-group">
+            <label for="title">标题</label>
+            <input name="title" id="title" class="form-control input-lg" type="text" placeholder="文章标题" value="{{title}}">
+          </div>
+          <div class="form-group">
+            <label for="content">内容</label>
+            <textarea name="content" id="content" class="form-control input-lg" cols="30" rows="10" placeholder="内容">{{content}}</textarea>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="feature">文章封面</label>
+            <!-- show when image chose -->
+            {{if thumbnail}}
+            <img class="help-block thumbnail" src="{{thumbnail}}" id="preview">
+            {{else}}
+            <img class="help-block thumbnail" id="preview">
+            {{/if}}
+            <input type="hidden" name="thumbnail" value="{{thumbnail}}" id="hiddenImg">
+            <input id="feature" class="form-control" type="file">
+          </div>
+          <div class="form-group">
+            <label for="category">所属分类</label>
+            <select name="category" id="category" class="form-control">
+              {{each cateList}}
+              <option value="{{$value._id}}" {{category._id == $value._id?'selected':''}}>{{$value.title}}</option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="created">发布时间</label>
+            <input name="createAt" id="created" class="form-control" type="date" value="{{createAt.split('T')[0]}}">
+          </div>
+          <div class="form-group">
+            <label for="status">状态</label>
+            <select name="state" id="status" class="form-control">
+              <option value="0" {{state==0?'selected':''}}>草稿</option>
+              <option value="1" {{state==1?'selected':''}}>已发布</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary" type="submit">保存</button>
+          </div>
+        </div>
+      </form>
+  </script>
+  <script>
+    //获取地址栏中的id值
+    var id = location.search.split('=')[1];
+    //顺序是没办法保证谁先回来谁后回来
+    //方式一：ajax嵌套ajax 
+    // $.ajax({
+    //   type:'get',
+    //   url:`/posts/${id}`,
+    //   success:function(res){
+    //     $.ajax({
+    //       type:'get',
+    //       url:'/categories',
+    //       success:function(res1){
+    //         console.log(res)
+    //         res.cateList = res1;//把分类的数据作为res的属性
+    //         console.log(res)
+    //         //渲染数据应该确保两个ajax的数据都回来才能去做
+    //         var html = template('tpl',res);
+    //         $('#editBox').append(html);
+    //       }
+    //     })
+    //   }
+    // })
+
+    //要确保两个ajax的数据同时返回成功之后再去渲染数据，否则会出问题
+    $.when(
+      $.ajax({
+        type:'get',
+        url:`/posts/${id}`
+      }),
+      $.ajax({
+        type:'get',
+        url:'/categories'
+      })  
+    ).done(function(res,res1){
+      res = res[0]
+      res1 = res1[0]
+      res.cateList = res1;//把分类数据作为文章数据的属性
+      var html = template('tpl',res);
+      $('#editBox').append(html);
+    })
+
+    //事件委托
+    $('#editBox').on('change','#feature',function(){
+      var fd = new FormData()
+      fd.append('avatar',this.files[0])
+      $.ajax({
+        type:'post',
+        url:'/upload',
+        processData:false,
+        contentType:false,
+        data:fd,
+        success:function(res){
+          console.log(res)
+          $('#preview').attr('src',res[0].avatar)
+          $('#hiddenImg').val(res[0].avatar)
+        }
+      })
+    })
+
+    //保存用户的修改
+    $('#editBox').on('submit','#editForm',function(){
+      $.ajax({
+        type:'put',
+        url:`/posts/${id}`,
+        data:$(this).serialize(),
+        success:function(){
+          //跳转回文章列表页面
+          location.href = 'posts.html'
+        }
+      })
+      return false;
+    })
+  </script>
+</body>
+</html>

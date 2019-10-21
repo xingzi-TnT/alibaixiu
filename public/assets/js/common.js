@@ -9,11 +9,15 @@ $('#logout').on('click', function () {
     }
 })
 
+
 $.ajax({
     type: 'get',
-    url: '/user/' + userId,
+    url: `/users/${userId}`,
     success: res => {
+        console.log(res);
+
         $('.profile .name').text(res.nickName)
-        $('.profile img.avatar').attr('src', res.avatar)
+        $('.profile .avatar').attr('src', res.avatar)
+        $('.profile').show()
     }
 })
